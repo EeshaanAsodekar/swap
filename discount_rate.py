@@ -31,6 +31,7 @@ class DiscountFactor:
 
         self.sofr_series = sofr_series
         self.final_table = cashflow_dates
+        self.final = pd.DataFrame()
 
 
     def get_days_between(self)->None:
@@ -48,15 +49,21 @@ class DiscountFactor:
         print(self.sofr_series)
 
     def interporlate_sofrs(self):
-        interpolated_sofr = self.sofr_series.iloc[1:].apply(
+        self.sofr_series['interpolated_sofr'] = self.sofr_series.iloc[1:].apply(
             lambda row: interpolate_sofr_rate(row['sofr_before'], row['days_before'], row['sofr_rate'], row['days_after']),
             axis=1
         )
 
-        return interpolated_sofr
 
     def get_discount_factors(self)->list:
-        pass
+        # Multiply the interpolated_sofr column by the days_between column and store the result as a list
+        self.final['interpolated_sofr'] = self.sofr_series['interpolated_sofr'].iloc[1:]
+        self.final['days_between'] = self.final_table['days_between'].iloc[1:]
+
+        print(self.final)
+
+        # TODO: add this discount factor logic df/ (1+nodays*rate/360)
+
 
 if __name__ == "__main__":
     dates = pd.read_excel("swap_cashflow_dates.xlsx")
@@ -66,5 +73,7 @@ if __name__ == "__main__":
 
     disc_factor.get_days_between()
     disc_factor.days_before_after_loader()
-    res = disc_factor.interporlate_sofrs()
-    print(res)
+    disc_factor.interporlate_sofrs()
+    disc_factor.get_discount_factors()
+
+    # print(disc_factor.discount_factors)
