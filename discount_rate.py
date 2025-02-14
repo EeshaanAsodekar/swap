@@ -55,13 +55,20 @@ class DiscountFactor:
         )
 
 
-    def get_discount_factors(self)->list:
+    def get_discount_factors(self, start)->list:
         # Multiply the interpolated_sofr column by the days_between column and store the result as a list
         self.final['interpolated_sofr'] = self.sofr_series['interpolated_sofr'].iloc[1:]
         self.final['days_between'] = self.final_table['days_between'].iloc[1:]
 
         print(self.final)
-
+        self.discount_factors = [start]
+        for i in range(1, len(self.final)):
+            sofr = self.final.loc[i, 'interpolated_sofr']
+            days_between = self.final.loc[i, 'days_between']
+            self.discount_factors.append(self.discount_factors[-1]/(1+(sofr/100)*days_between/360))
+        
+        print(self.discount_factors)
+        return self.discount_factors[1:]
         # TODO: add this discount factor logic df/ (1+nodays*rate/360)
 
 
@@ -74,6 +81,6 @@ if __name__ == "__main__":
     disc_factor.get_days_between()
     disc_factor.days_before_after_loader()
     disc_factor.interporlate_sofrs()
-    disc_factor.get_discount_factors()
+    final_discount_factors = disc_factor.get_discount_factors(1)
 
     # print(disc_factor.discount_factors)
